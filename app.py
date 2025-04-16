@@ -1,7 +1,7 @@
 import streamlit as st
 import openai
 import speech_recognition as sr
-import pyttsx3
+#import pyttsx3
 from dotenv import load_dotenv
 import os
 from utils.chat import get_headlines  # Import the get_headlines function
@@ -21,13 +21,13 @@ client = openai.OpenAI(
 )
 
 # Text-to-speech engine
-tts_engine = pyttsx3.init()
+#tts_engine = pyttsx3.init()
 
 def speak(text):
-    try:
-        tts_engine.say(text)
-        tts_engine.runAndWait()
-    except RuntimeError:
+    #try:
+        #tts_engine.say(text)
+        #tts_engine.runAndWait()
+    #except RuntimeError:
         pass  # Prevent "run loop already started" error in Streamlit
 
 # Voice input
