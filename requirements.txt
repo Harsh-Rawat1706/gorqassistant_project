@@ -1,0 +1,9 @@
+streamlit
+openai
+groq
+python-dotenv
+SpeechRecognition
+pydub
+pyttsx3
+fluvio
+requests
