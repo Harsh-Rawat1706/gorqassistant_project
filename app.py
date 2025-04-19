@@ -1,7 +1,7 @@
 import streamlit as st
 import openai
 import speech_recognition as sr
-#import pyttsx3
+import pyttsx3
 from dotenv import load_dotenv
 import os
 from utils.chat import get_headlines  # Import the get_headlines function
@@ -9,7 +9,7 @@ import threading
 import time
 import requests
 
-# Load API key
+# Load API key from .env
 load_dotenv()
 groq_api_key = os.getenv("GROQ_API_KEY")
 news_api_key = os.getenv("NEWS_API_KEY")  # Make sure to add this in your .env
@@ -20,17 +20,25 @@ client = openai.OpenAI(
     base_url="https://api.groq.com/openai/v1",  # Groq's API base URL
 )
 
-# Text-to-speech engine
-#tts_engine = pyttsx3.init()
+# Text-to-speech engine (Use gTTS or pyttsx3)
+# Uncomment the next two lines if you're using pyttsx3
+# tts_engine = pyttsx3.init()
 
 def speak(text):
-    #try:
-        #tts_engine.say(text)
-        #tts_engine.runAndWait()
-    #except RuntimeError:
+    try:
+        # Uncomment for pyttsx3
+        # tts_engine.say(text)
+        # tts_engine.runAndWait()
+        
+        # Alternatively, using gTTS for text-to-speech
+        from gtts import gTTS
+        tts = gTTS(text=text, lang='en')
+        tts.save("output.mp3")
+        os.system("start output.mp3")  # This will work on Windows, change it for other OS
+    except RuntimeError:
         pass  # Prevent "run loop already started" error in Streamlit
 
-# Voice input
+# Voice input function
 def listen():
     r = sr.Recognizer()
     with sr.Microphone() as source:
@@ -41,7 +49,7 @@ def listen():
     except Exception as e:
         return f"Could not understand audio: {e}"
 
-# Chat with Groq
+# Function to interact with the Groq API
 def chat_with_groq(user_prompt):
     response = client.chat.completions.create(
         model="llama3-8b-8192",  # You can also try "llama3-70b-8192" if needed
@@ -52,7 +60,7 @@ def chat_with_groq(user_prompt):
     )
     return response.choices[0].message.content.strip()
 
-# Function to display breaking news
+# Function to fetch breaking news
 def get_news(category="general"):
     url = f"https://newsapi.org/v2/top-headlines?category={category}&apiKey={news_api_key}"
     try:
@@ -66,7 +74,7 @@ def get_news(category="general"):
         st.error(f"Error fetching news: {e}")
         return []
 
-# Function to display the latest breaking news in the sidebar
+# Function to display breaking news in the sidebar
 def display_news():
     while True:
         category = st.sidebar.selectbox("Select News Category", ["general", "business", "technology", "sports", "health", "entertainment", "science"])
@@ -87,12 +95,20 @@ st.title("🧠 Groq Voice & Text Chatbot with Live News")
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Display chatbot conversation
+# Chat bubbles display with styling
 for message in st.session_state.messages:
     if message['role'] == 'user':
-        st.markdown(f"<div style='text-align: left;'><strong>You:</strong> {message['content']}</div>", unsafe_allow_html=True)
+        st.markdown(f"""
+        <div style='text-align: left; padding: 12px; margin: 12px; background-color: #f0f8ff; border-radius: 12px; border: 1px solid #ccc; max-width: 75%; font-size: 16px; color: #333;'>
+            <strong>You:</strong> {message['content']}
+        </div>
+        """, unsafe_allow_html=True)
     else:
-        st.markdown(f"<div style='text-align: right;'><strong>AI:</strong> {message['content']}</div>", unsafe_allow_html=True)
+        st.markdown(f"""
+        <div style='text-align: right; padding: 12px; margin: 12px; background-color: #333; color: white; border-radius: 12px; border: 1px solid #ccc; max-width: 75%; font-size: 18px; font-weight: bold;'>
+            <strong>AI:</strong> {message['content']}
+        </div>
+        """, unsafe_allow_html=True)
 
 # Add text input box for chat
 user_input = st.text_input("📝 Type your question:")
@@ -108,7 +124,11 @@ if user_input:
         answer = chat_with_groq(user_input)
     st.session_state.messages.append({"role": "user", "content": user_input})
     st.session_state.messages.append({"role": "assistant", "content": answer})
-    st.markdown(f"<div style='text-align: right;'><strong>AI:</strong> {answer}</div>", unsafe_allow_html=True)
+    st.markdown(f"""
+    <div style='text-align: right; padding: 12px; margin: 12px; background-color: #333; color: white; border-radius: 12px; border: 1px solid #ccc; max-width: 75%; font-size: 18px; font-weight: bold;'>
+        <strong>AI:</strong> {answer}
+    </div>
+    """, unsafe_allow_html=True)
     speak(answer)  # Convert response to speech
 
 # Start news stream in the background when the button is clicked
@@ -127,17 +147,17 @@ if "news" in st.session_state:
 else:
     st.sidebar.markdown("No news available yet...")
 
-# Custom Styling 
+# Custom Styling for better look and feel
 st.markdown("""
     <style>
         /* Style for the text input box */
         .stTextInput input {
-            background-color: #f0f0f0;
-            color: black;  /* Ensure text is visible */
-            padding: 10px;
-            border-radius: 5px;
+            background-color: #f0f8ff;
+            color: #333;
+            padding: 12px;
+            border-radius: 12px;
             border: 1px solid #ccc;
-            font-size: 16px;
+            font-size: 18px;
         }
 
         .stTextInput label {
@@ -148,8 +168,9 @@ st.markdown("""
         .stButton button {
             background-color: #1e90ff;
             color: white;
-            border-radius: 10px;
-            padding: 10px 20px;
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-size: 16px;
         }
 
         /* Style for chat bubbles */
@@ -158,13 +179,24 @@ st.markdown("""
         }
 
         .stMarkdown div strong {
-            font-size: 14px;
+            font-size: 16px;
             color: #555;
         }
 
         .stMarkdown div {
-            font-size: 16px;
+            font-size: 18px;
             line-height: 1.6;
         }
+
+        /* Style for the sidebar */
+        .css-1kyxreq {
+            background-color: #f5f5f5;
+        }
+
+        /* Add hover effect for the text input box */
+        .stTextInput input:hover {
+            border-color: #1e90ff;
+        }
+
     </style>
 """, unsafe_allow_html=True)
