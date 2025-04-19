@@ -4,6 +4,5 @@ groq
 python-dotenv
 SpeechRecognition
 pydub
-pyttsx3
-fluvio
+gtts 
 requests
