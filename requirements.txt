@@ -1,8 +1,6 @@
 streamlit
 openai
-groq
-python-dotenv
-SpeechRecognition
-pydub
-gtts 
 requests
+python-dotenv
+streamlit-js-eval
+
