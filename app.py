@@ -41,12 +41,12 @@ def get_news(category="general"):
         st.error(f"Error fetching news: {e}")
         return []
 
-#def display_news():
-    #while True:
-        #category = st.sidebar.selectbox("News Category", ["general", "business", "technology", "sports", "health", "entertainment", "science"])
-        #headlines = get_news(category)
-        #st.session_state.news = headlines if headlines else [{"title": "No news", "url": "#", "description": ""}]
-        #time.sleep(30)
+def display_news():
+    while True:
+        category = st.sidebar.selectbox("News Category", ["general", "business", "technology", "sports", "health", "entertainment", "science"])
+        headlines = get_news(category)
+        st.session_state.news = headlines if headlines else [{"title": "No news", "url": "#", "description": ""}]
+        time.sleep(30)
 
 # Streamlit UI
 st.set_page_config(page_title="Groq AI News Chatbot", layout="centered")
